@@ -35,43 +35,21 @@ def preprocess_frame(frame: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
 def analyze_emotion(face_roi: np.ndarray) -> str:
     """Return the dominant emotion for a face ROI using DeepFace."""
-    if face_roi.size == 0:
-        return "unknown"
-
-    height, width = face_roi.shape[:2]
-    smallest_dim = min(height, width)
-
-    # Upscale small face crops for more reliable DeepFace predictions.
-    if smallest_dim < 96:
-        scale = 96 / float(smallest_dim)
-        new_size = (int(width * scale), int(height * scale))
-        face_roi = cv2.resize(face_roi, new_size, interpolation=cv2.INTER_CUBIC)
-
-    rgb_face = cv2.cvtColor(face_roi, cv2.COLOR_BGR2RGB)
-
     try:
         analysis = DeepFace.analyze(
-            rgb_face,
+            face_roi,
             actions=["emotion"],
             enforce_detection=False,
             detector_backend="skip",
             prog_bar=False,
-            align=False,
         )
-    except Exception as exc:
-        print(f"DeepFace error while analyzing emotion: {exc}")
+    except Exception:
         return "unknown"
 
     if isinstance(analysis, list):
         analysis = analysis[0]
 
-    dominant_emotion = analysis.get("dominant_emotion")
-    if not dominant_emotion:
-        emotion_scores = analysis.get("emotion") or analysis.get("emotions")
-        if isinstance(emotion_scores, dict) and emotion_scores:
-            dominant_emotion = max(emotion_scores, key=emotion_scores.get)
-
-    return str(dominant_emotion or "unknown")
+    return str(analysis.get("dominant_emotion", "unknown"))
 
 
 def draw_label(frame: np.ndarray, text: str, position: Tuple[int, int]) -> None:
@@ -147,20 +125,11 @@ def main() -> None:
             minSize=(60, 60),
         )
 
-        frame_height, frame_width = motion_frame.shape[:2]
-
         for (x, y, w, h) in faces:
-            padding = int(0.15 * max(w, h))
-            x1 = max(x - padding, 0)
-            y1 = max(y - padding, 0)
-            x2 = min(x + w + padding, frame_width)
-            y2 = min(y + h + padding, frame_height)
-
-            face_roi = motion_frame[y1:y2, x1:x2]
+            face_roi = motion_frame[y : y + h, x : x + w]
             emotion = analyze_emotion(face_roi)
-
-            cv2.rectangle(motion_frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
-            draw_label(motion_frame, emotion, (x1, y1))
+            cv2.rectangle(motion_frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            draw_label(motion_frame, emotion, (x, y))
 
         cv2.imshow("Motion & Emotion Recognition", motion_frame)
 
