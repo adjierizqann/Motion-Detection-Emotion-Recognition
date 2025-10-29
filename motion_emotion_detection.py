@@ -35,19 +35,13 @@ def preprocess_frame(frame: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
 def analyze_emotion(face_roi: np.ndarray) -> str:
     """Return the dominant emotion for a face ROI using DeepFace."""
-    if face_roi.size == 0:
-        return "unknown"
-
-    rgb_face = cv2.cvtColor(face_roi, cv2.COLOR_BGR2RGB)
-
     try:
         analysis = DeepFace.analyze(
-            rgb_face,
+            face_roi,
             actions=["emotion"],
             enforce_detection=False,
             detector_backend="skip",
             prog_bar=False,
-            align=False,
         )
     except Exception:
         return "unknown"
