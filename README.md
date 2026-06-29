@@ -1,32 +1,41 @@
-# 🎥 Motion & Emotion Detection
+# Motion and Emotion Recognition
 
-Real-time **motion detection** and **emotion recognition** using **OpenCV** and **DeepFace**.
+A compact webcam demonstration that combines frame-difference motion detection,
+OpenCV face detection, and DeepFace emotion classification in one real-time
+view.
 
-![demo](assets/demo.gif)
+## How it works
 
----
+1. Consecutive grayscale frames are compared to locate significant motion.
+2. OpenCV's bundled Haar cascade locates faces in the current frame.
+3. Each face region is passed to DeepFace for dominant-emotion estimation.
+4. Motion boxes and emotion labels are rendered locally on the webcam feed.
 
-## 🚀 Features
-- 🧠 Detects 7 emotions: happy, sad, angry, neutral, fear, surprise, disgust  
-- 🎥 Real-time motion tracking with webcam  
-- ⚡ Lightweight OpenCV + DeepFace pipeline  
-- 💾 Auto-downloads pre-trained FER2013 model  
+The application does not upload or persist camera frames.
 
----
+## Requirements
 
-## 🧩 Tech Stack
-| Component | Description |
-|------------|-------------|
-| Python | Core language |
-| OpenCV | Face & motion detection |
-| DeepFace | Emotion classification |
-| TensorFlow / Keras | Deep learning backend |
-
----
-
-## 📦 Installation
+- Python 3.10 or 3.11
+- A webcam accessible to OpenCV
+- Desktop access for the OpenCV preview window
 
 ```bash
-git clone https://github.com/adjierizqann/Motion-Detection-Emotion-Recognition.git
+git clone https://github.com/adjierizqan/Motion-Detection-Emotion-Recognition.git
 cd Motion-Detection-Emotion-Recognition
-pyhton motion_emotion_detection.py
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python motion_emotion_detection.py
+```
+
+Press `q` to close the application. DeepFace may download model weights on the
+first run, so the initial startup can take longer.
+
+## Limitations
+
+- Frame differencing is sensitive to camera movement and lighting changes.
+- Emotion labels are model estimates and must not be treated as reliable
+  measurements of a person's internal state.
+- Performance depends on the TensorFlow backend selected by DeepFace.
+
+GitHub Actions checks Python syntax; webcam inference must be tested locally.
